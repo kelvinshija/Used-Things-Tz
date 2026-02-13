@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Products - used things-Tz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Poppins',sans-serif; background:#f8fafc; }
+        .navbar { background:linear-gradient(145deg,#1a1a2e,#16213e); padding:15px 30px; color:white; }
+        .nav-container { max-width:1400px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; }
+        .logo { display:flex; align-items:center; gap:10px; text-decoration:none; color:white; }
+        .logo i { font-size:2rem; background:linear-gradient(45deg,#ff6b6b,#ff8e8e); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .nav-links a { color:white; text-decoration:none; margin-left:20px; padding:10px 20px; border-radius:50px; }
+        .nav-links a.active { background:rgba(255,107,107,0.2); color:#ff6b6b; }
+        .main { max-width:1400px; margin:40px auto; padding:0 30px; }
+        .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; }
+        .btn-add {
+            padding:12px 30px; background:linear-gradient(45deg,#ff6b6b,#ff8e8e);
+            color:white; text-decoration:none; border-radius:50px; font-weight:600;
+        }
+        .products-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(350px,1fr)); gap:30px; }
+        .product-card {
+            background:white; border-radius:20px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.05);
+            transition:0.3s; position:relative;
+        }
+        .product-card:hover { transform:translateY(-10px); border:2px solid #ff6b6b; }
+        .product-image { height:200px; width:100%; object-fit:cover; }
+        .product-info { padding:20px; }
+        .product-title { font-size:1.2rem; font-weight:700; color:#333; }
+        .product-price { color:#ff6b6b; font-weight:800; font-size:1.3rem; }
+        .actions { display:flex; gap:10px; margin-top:15px; }
+        .btn-edit, .btn-delete {
+            flex:1; padding:10px; border:none; border-radius:10px; font-weight:600; cursor:pointer;
+        }
+        .btn-edit { background:#4CAF50; color:white; }
+        .btn-delete { background:#ff6b6b; color:white; }
+        .empty-state { text-align:center; padding:60px; background:white; border-radius:20px; }
+
+        /* Edit Modal Styles */
+        .edit-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+        .edit-modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .edit-modal h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .edit-form-group {
+            margin-bottom: 15px;
+        }
+        .edit-form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+        .edit-form-group input,
+        .edit-form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+        }
+        .edit-form-group input:focus,
+        .edit-form-group textarea:focus {
+            border-color: #ff6b6b;
+            outline: none;
+        }
+        .edit-image-upload {
+            border: 2px dashed #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            background: #fafafa;
+            margin-bottom: 15px;
+        }
+        .edit-image-upload:hover {
+            border-color: #ff6b6b;
+            background: rgba(255,107,107,0.05);
+        }
+        .edit-image-upload i {
+            font-size: 30px;
+            color: #ff6b6b;
+            margin-bottom: 10px;
+        }
+        .edit-image-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .edit-preview-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .edit-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .edit-preview-remove {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 20px;
+            height: 20px;
+            background: #ff4444;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .edit-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .edit-save-btn {
+            flex: 1;
+            padding: 15px;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .edit-cancel-btn {
+            flex: 1;
+            padding: 15px;
+            background: #e0e0e0;
+            color: #666;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="user-dashboard.html" class="logo"><i class="fas fa-store"></i><span>used things-Tz</span></a>
+            <div class="nav-links">
+                <a href="user-dashboard.html">Home</a>
+                <a href="favorites.html">Favorites</a>
+                <a href="my-products.html" class="active">My Products</a>
+                <a href="profile-settings.html">Settings</a>
+            </div>
+        </div>
+    </nav>
+    <div class="main">
+        <div class="header">
+            <h1>My Products</h1>
+            <a href="sell-product.html" class="btn-add"><i class="fas fa-plus"></i> Add New Product</a>
+        </div>
+        <div id="productsGrid" class="products-grid"></div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let currentEditProduct = null;
+        let editSelectedImages = [];
+
+        function loadMyProducts() {
+            currentUser = JSON.parse(localStorage.getItem('currentUser')) || JSON.parse(sessionStorage.getItem('currentUser'));
+            if (!currentUser) { window.location.href='signin.html'; return; }
+            const all = JSON.parse(localStorage.getItem('products')) || [];
+            const mine = all.filter(p => p.sellerId === currentUser.id);
+            const grid = document.getElementById('productsGrid');
+            
+            if (!mine.length) {
+                grid.innerHTML = '<div class="empty-state"><i class="fas fa-box-open" style="font-size:60px; color:#ccc;"></i><h3>No products yet</h3><p><a href="sell-product.html" style="color:#ff6b6b;">Post your first product</a></p></div>';
+                return;
+            }
+            
+            grid.innerHTML = mine.map(p => `
+                <div class="product-card">
+                    <img src="${p.images?.[0] || 'https://via.placeholder.com/400x300'}" class="product-image">
+                    <div class="product-info">
+                        <div style="display:flex; justify-content:space-between;">
+                            <h3 class="product-title">${p.name}</h3>
+                            <span class="product-price">TZS ${p.price?.toLocaleString()}</span>
+                        </div>
+                        <p style="color:#666; margin:10px 0;">${p.location || 'Tanzania'} • ${p.condition || 'Good'}</p>
+                        <div class="actions">
+                            <button class="btn-edit" onclick="editProduct('${p.id}')"><i class="fas fa-edit"></i> Edit</button>
+                            <button class="btn-delete" onclick="deleteProduct('${p.id}')"><i class="fas fa-trash"></i> Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function deleteProduct(id) {
+            if (!confirm('Delete this product?')) return;
+            let all = JSON.parse(localStorage.getItem('products')) || [];
+            all = all.filter(p => p.id !== id);
+            localStorage.setItem('products', JSON.stringify(all));
+            loadMyProducts();
+        }
+
+        // Edit Product with Image Upload
+        function editProduct(id) {
+            const all = JSON.parse(localStorage.getItem('products')) || [];
+            const product = all.find(p => p.id === id);
+            if (!product) return;
+
+            currentEditProduct = product;
+            editSelectedImages = product.images ? [...product.images] : [];
+
+            // Create modal
+            const modal = document.createElement('div');
+            modal.className = 'edit-modal';
+            modal.id = 'editModal';
+
+            modal.innerHTML = `
+                <div class="edit-modal-content">
+                    <h2>Edit Product</h2>
+                    
+                    <div class="edit-form-group">
+                        <label>Product Name</label>
+                        <input type="text" id="editName" value="${product.name || ''}">
+                    </div>
+                    
+                    <div class="edit-form-group">
+                        <label>Price (TZS)</label>
+                        <input type="number" id="editPrice" value="${product.price || ''}">
+                    </div>
+                    
+                    <div class="edit-form-group">
+                        <label>Description</label>
+                        <textarea id="editDesc" rows="4">${product.description || ''}</textarea>
+                    </div>
+                    
+                    <div class="edit-form-group">
+                        <label>Condition</label>
+                        <input type="text" id="editCondition" value="${product.condition || ''}">
+                    </div>
+                    
+                    <div class="edit-form-group">
+                        <label>Location</label>
+                        <input type="text" id="editLocation" value="${product.location || ''}">
+                    </div>
+                    
+                    <div class="edit-form-group">
+                        <label>Product Images (Max 5)</label>
+                        <div class="edit-image-upload" id="editImageUploadArea">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Click to select new images</p>
+                            <small style="color:#999;">Chagua picha mpya kama unataka kubadilisha</small>
+                        </div>
+                        <input type="file" id="editProductImages" accept="image/*" multiple style="display:none;">
+                        <div id="editImagePreview" class="edit-image-preview"></div>
+                    </div>
+                    
+                    <div class="edit-buttons">
+                        <button class="edit-save-btn" id="saveEditBtn">Save Changes</button>
+                        <button class="edit-cancel-btn" id="cancelEditBtn">Cancel</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            // Show existing images
+            refreshEditImagePreview();
+
+            // Setup image upload
+            const editImageUploadArea = document.getElementById('editImageUploadArea');
+            const editProductImages = document.getElementById('editProductImages');
+
+            editImageUploadArea.addEventListener('click', () => {
+                editProductImages.click();
+            });
+
+            editProductImages.addEventListener('change', (e) => {
+                const files = Array.from(e.target.files);
+                handleEditImageFiles(files);
+            });
+
+            // Save changes
+            document.getElementById('saveEditBtn').onclick = function() {
+                product.name = document.getElementById('editName').value || product.name;
+                product.price = Number(document.getElementById('editPrice').value) || product.price;
+                product.description = document.getElementById('editDesc').value || product.description;
+                product.condition = document.getElementById('editCondition').value || product.condition;
+                product.location = document.getElementById('editLocation').value || product.location;
+                product.images = editSelectedImages;
+
+                localStorage.setItem('products', JSON.stringify(all));
+                document.body.removeChild(modal);
+                loadMyProducts();
+                alert('Product updated successfully!');
+            };
+
+            // Cancel
+            document.getElementById('cancelEditBtn').onclick = function() {
+                document.body.removeChild(modal);
+            };
+        }
+
+        // Handle edit image files
+        async function handleEditImageFiles(files) {
+            const imageFiles = files.filter(file => file.type.startsWith('image/'));
+            
+            if (editSelectedImages.length + imageFiles.length > 5) {
+                alert('Unaweza kupakia picha 5 pekee');
+                return;
+            }
+
+            for (const file of imageFiles) {
+                if (file.size > 5 * 1024 * 1024) {
+                    alert(`File ${file.name} ni kubwa sana. Tafadhali chagua file ndogo (max 5MB)`);
+                    continue;
+                }
+
+                const reader = new FileReader();
+                
+                await new Promise((resolve) => {
+                    reader.onload = function(e) {
+                        // Compress image
+                        const img = new Image();
+                        img.src = e.target.result;
+                        img.onload = function() {
+                            const canvas = document.createElement('canvas');
+                            let width = img.width;
+                            let height = img.height;
+                            
+                            if (width > 800) {
+                                height *= 800 / width;
+                                width = 800;
+                            }
+                            if (height > 800) {
+                                width *= 800 / height;
+                                height = 800;
+                            }
+                            
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            
+                            const compressedImage = canvas.toDataURL('image/jpeg', 0.7);
+                            editSelectedImages.push(compressedImage);
+                            refreshEditImagePreview();
+                            
+                            resolve();
+                        }
+                    }
+                    reader.readAsDataURL(file);
+                });
+            }
+        }
+
+        // Refresh edit image preview
+        function refreshEditImagePreview() {
+            const preview = document.getElementById('editImagePreview');
+            if (!preview) return;
+            
+            preview.innerHTML = '';
+            editSelectedImages.forEach((image, index) => {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'edit-preview-item';
+                
+                const img = document.createElement('img');
+                img.src = image;
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'edit-preview-remove';
+                removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                removeBtn.onclick = function(e) {
+                    e.preventDefault();
+                    editSelectedImages.splice(index, 1);
+                    refreshEditImagePreview();
+                };
+                
+                previewItem.appendChild(img);
+                previewItem.appendChild(removeBtn);
+                preview.appendChild(previewItem);
+            });
+        }
+
+        window.onload = loadMyProducts;
+    </script>
+</body>
+</html>

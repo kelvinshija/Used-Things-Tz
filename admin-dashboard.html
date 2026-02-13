@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Admin Dashboard - used things-Tz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(145deg, #f6f9fc, #e6f0f5);
+        }
+        .admin-container { display: flex; min-height: 100vh; }
+        .sidebar {
+            width: 280px; background: linear-gradient(145deg, #1a1a2e, #16213e);
+            color: white; padding: 30px 0; position: fixed; height: 100vh; overflow-y: auto;
+        }
+        .sidebar-header { padding: 0 25px; margin-bottom: 40px; display: flex; align-items: center; gap: 15px; }
+        .logo i { font-size: 2.5rem; background: linear-gradient(45deg, #ff6b6b, #ff8e8e); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logo-text h2 { font-size: 1.5rem; font-weight: 700; color: white; }
+        .admin-profile {
+            padding: 25px; background: rgba(255,255,255,0.05); margin: 0 20px 30px;
+            border-radius: 20px; display: flex; align-items: center; gap: 15px;
+        }
+        .admin-avatar {
+            width: 60px; height: 60px; background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem; color: white;
+        }
+        .nav-menu { list-style: none; padding: 0 20px; }
+        .nav-item { margin-bottom: 10px; }
+        .nav-link {
+            display: flex; align-items: center; padding: 15px 20px; color: rgba(255,255,255,0.8);
+            text-decoration: none; border-radius: 15px; transition: all 0.3s ease; gap: 15px;
+        }
+        .nav-link i { width: 30px; color: #ff6b6b; }
+        .nav-link:hover, .nav-link.active {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e); color: white;
+        }
+        .nav-link:hover i { color: white; }
+        .main-content {
+            flex: 1; margin-left: 280px; padding: 30px;
+        }
+        .top-bar {
+            background: white; padding: 20px 30px; border-radius: 20px;
+            display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px;
+        }
+        .page-title h1 { font-size: 1.8rem; font-weight: 700; color: #333; }
+        .page-title span { color: #ff6b6b; }
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap: 25px; margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white; border-radius: 20px; padding: 25px;
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        .stat-info h3 { font-size: 1rem; color: #666; margin-bottom: 10px; }
+        .stat-number { font-size: 2rem; font-weight: 800; color: #333; }
+        .stat-icon {
+            width: 60px; height: 60px; background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 1.5rem;
+        }
+        .products-table-container {
+            background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        .table-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; }
+        .search-box {
+            display: flex; align-items: center; gap: 10px; background: #f5f5f5;
+            padding: 5px 5px 5px 20px; border-radius: 50px; flex: 1; max-width: 400px;
+        }
+        .search-box input { flex: 1; padding: 12px 0; border: none; background: transparent; outline: none; }
+        .search-box button {
+            padding: 12px 25px; background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            border: none; border-radius: 50px; color: white; cursor: pointer;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 15px; color: #666; border-bottom: 2px solid #f0f0f0; }
+        td { padding: 15px; border-bottom: 1px solid #f0f0f0; }
+        .product-info { display: flex; align-items: center; gap: 15px; }
+        .product-thumb { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; }
+        .price { font-weight: 700; color: #ff6b6b; }
+        .action-buttons { display: flex; gap: 10px; }
+        .action-btn {
+            width: 35px; height: 35px; border: none; border-radius: 8px;
+            cursor: pointer; transition: all 0.3s ease; color: white;
+        }
+        .edit-btn { background: linear-gradient(45deg, #4CAF50, #45a049); }
+        .delete-btn { background: linear-gradient(45deg, #ff6b6b, #ff8e8e); }
+        .action-btn:hover { transform: translateY(-3px) scale(1.1); }
+
+        /* Image Upload Styles */
+        .image-upload-area {
+            border: 2px dashed #e0e0e0;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fafafa;
+            margin-bottom: 15px;
+        }
+        .image-upload-area:hover {
+            border-color: #ff6b6b;
+            background: rgba(255,107,107,0.05);
+        }
+        .image-upload-area i {
+            font-size: 48px;
+            color: #ff6b6b;
+            margin-bottom: 10px;
+        }
+        .image-upload-area p {
+            color: #666;
+            font-size: 14px;
+        }
+        .image-preview-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .preview-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .preview-remove {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 25px;
+            height: 25px;
+            background: rgba(255,68,68,0.9);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        .preview-remove:hover {
+            background: #ff4444;
+            transform: scale(1.1);
+        }
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            margin: 10px 0;
+            display: none;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .image-limit-warning {
+            color: #ff6b6b;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); width: 100%; max-width: 320px; }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo"><i class="fas fa-store"></i></div>
+                <div class="logo-text"><h2>used things-Tz</h2><p>Admin Panel</p></div>
+            </div>
+            <div class="admin-profile">
+                <div class="admin-avatar" id="adminAvatar">A</div>
+                <div><h4 id="adminName">Admin</h4><p>Administrator</p></div>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="#dashboard" class="nav-link active" onclick="showSection('dashboard')"><i class="fas fa-dashboard"></i> Dashboard</a></li>
+                <li class="nav-item"><a href="#upload" class="nav-link" onclick="showSection('upload')"><i class="fas fa-cloud-upload-alt"></i> Upload Product</a></li>
+                <li class="nav-item"><a href="#myproducts" class="nav-link" onclick="showSection('myproducts')"><i class="fas fa-box"></i> My Products</a></li>
+                <li class="nav-item"><a href="#users" class="nav-link" onclick="showSection('users')"><i class="fas fa-users"></i> Users</a></li>
+                <li class="nav-item"><a href="profile-settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
+                <li class="nav-item"><a href="#" onclick="logout()" class="nav-link"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div class="page-title"><h1>Welcome, <span id="welcomeName">Admin</span>!</h1></div>
+            </div>
+
+            <!-- Dashboard Section -->
+            <div id="dashboardSection">
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-info"><h3>My Products</h3><div class="stat-number" id="myProductsCount">0</div></div><div class="stat-icon"><i class="fas fa-box"></i></div></div>
+                    <div class="stat-card"><div class="stat-info"><h3>Total Users</h3><div class="stat-number" id="totalUsersCount">0</div></div><div class="stat-icon"><i class="fas fa-users"></i></div></div>
+                    <div class="stat-card"><div class="stat-info"><h3>Total Products</h3><div class="stat-number" id="totalProductsCount">0</div></div><div class="stat-icon"><i class="fas fa-shopping-cart"></i></div></div>
+                </div>
+                <div class="products-table-container">
+                    <div class="table-header"><h2>My Products</h2><div class="search-box"><i class="fas fa-search"></i><input type="text" id="searchMyProducts" placeholder="Search my products..."><button onclick="searchMyProducts()">Search</button></div></div>
+                    <table><thead><tr><th>Product</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead><tbody id="myProductsTableBody"></tbody></table>
+                </div>
+            </div>
+
+            <!-- Upload Section (with Image Upload) -->
+            <div id="uploadSection" style="display:none;">
+                <div class="products-table-container">
+                    <h2 style="margin-bottom:20px;">Upload New Product</h2>
+                    <form id="uploadForm">
+                        <div style="margin-bottom:15px;">
+                            <input type="text" id="prodName" placeholder="Product Name" style="width:100%; padding:15px; border-radius:10px; border:2px solid #e0e0e0;" required>
+                        </div>
+                        <div style="margin-bottom:15px;">
+                            <select id="prodCategory" style="width:100%; padding:15px; border-radius:10px; border:2px solid #e0e0e0;">
+                                <option value="Electronics">Electronics</option>
+                                <option value="Furniture">Furniture</option>
+                                <option value="Clothing">Clothing</option>
+                                <option value="Vehicles">Vehicles</option>
+                                <option value="Books">Books</option>
+                                <option value="Sports">Sports</option>
+                                <option value="Computers">Computers</option>
+                                <option value="Kitchen">Kitchen</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom:15px;">
+                            <input type="text" id="prodLocation" placeholder="Location" style="width:100%; padding:15px; border-radius:10px; border:2px solid #e0e0e0;" required>
+                        </div>
+                        <div style="margin-bottom:15px;">
+                            <input type="number" id="prodPrice" placeholder="Price (TZS)" style="width:100%; padding:15px; border-radius:10px; border:2px solid #e0e0e0;" required>
+                        </div>
+                        <div style="margin-bottom:15px;">
+                            <textarea id="prodDescription" placeholder="Description" rows="4" style="width:100%; padding:15px; border-radius:10px; border:2px solid #e0e0e0;"></textarea>
+                        </div>
+                        <div style="margin-bottom:15px;">
+                            <input type="text" id="prodCondition" placeholder="Condition (e.g., Like New, Good)" style="width:100%; padding:15px; border-radius:10px; border:2px solid #e0e0e0;" required>
+                        </div>
+                        
+                        <!-- Image Upload Section -->
+                        <div style="margin-bottom:15px;">
+                            <label style="display:block; margin-bottom:10px; font-weight:600; color:#333;">Product Images (Max 5)</label>
+                            <div class="image-upload-area" id="adminImageUploadArea">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Drag & drop images here or click to select</p>
+                                <small style="color:#999;">Supported: JPG, PNG, GIF (Max 5MB each)</small>
+                            </div>
+                            <input type="file" id="adminProductImages" accept="image/*" multiple style="display: none;">
+                            <div class="image-limit-warning" id="adminImageLimitWarning">
+                                <i class="fas fa-exclamation-circle"></i> Maximum 5 images allowed
+                            </div>
+                            <div class="progress-bar" id="adminProgressBar">
+                                <div class="progress-fill" id="adminProgressFill"></div>
+                            </div>
+                            <div id="adminImagePreview" class="image-preview-container"></div>
+                        </div>
+                        
+                        <button type="submit" style="width:100%; padding:15px; background:linear-gradient(45deg,#ff6b6b,#ff8e8e); color:white; border:none; border-radius:10px; font-weight:700; cursor:pointer;" id="adminSubmitBtn">Upload Product</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- My Products Section (Manage) -->
+            <div id="myproductsSection" style="display:none;">
+                <div class="products-table-container">
+                    <div class="table-header"><h2>Manage My Products</h2><div class="search-box"><i class="fas fa-search"></i><input type="text" id="searchManage" placeholder="Search..."><button onclick="searchManage()">Search</button></div></div>
+                    <table><thead><tr><th>Product</th><th>Price</th><th>Actions</th></tr></thead><tbody id="manageProductsTableBody"></tbody></table>
+                </div>
+            </div>
+
+            <!-- Users Section -->
+            <div id="usersSection" style="display:none;">
+                <div class="products-table-container">
+                    <h2>All Users</h2>
+                    <table><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Role</th></tr></thead><tbody id="usersTableBody"></tbody></table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let myProducts = [];
+        let adminSelectedImages = [];
+
+        // Image upload functionality
+        const adminImageUploadArea = document.getElementById('adminImageUploadArea');
+        const adminProductImages = document.getElementById('adminProductImages');
+        const adminImagePreview = document.getElementById('adminImagePreview');
+        const adminImageLimitWarning = document.getElementById('adminImageLimitWarning');
+        const adminProgressBar = document.getElementById('adminProgressBar');
+        const adminProgressFill = document.getElementById('adminProgressFill');
+        const adminSubmitBtn = document.getElementById('adminSubmitBtn');
+        
+        let isUploading = false;
+
+        // Trigger file input
+        if (adminImageUploadArea) {
+            adminImageUploadArea.addEventListener('click', () => {
+                adminProductImages.click();
+            });
+
+            // Handle drag and drop
+            adminImageUploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                adminImageUploadArea.style.borderColor = '#ff6b6b';
+                adminImageUploadArea.style.background = 'rgba(255,107,107,0.1)';
+            });
+
+            adminImageUploadArea.addEventListener('dragleave', () => {
+                adminImageUploadArea.style.borderColor = '#e0e0e0';
+                adminImageUploadArea.style.background = '#fafafa';
+            });
+
+            adminImageUploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                adminImageUploadArea.style.borderColor = '#e0e0e0';
+                adminImageUploadArea.style.background = '#fafafa';
+                
+                const files = Array.from(e.dataTransfer.files);
+                handleAdminImageFiles(files);
+            });
+        }
+
+        // Handle file selection
+        if (adminProductImages) {
+            adminProductImages.addEventListener('change', (e) => {
+                const files = Array.from(e.target.files);
+                handleAdminImageFiles(files);
+            });
+        }
+
+        // Compress image function
+        function compressImage(base64, maxWidth = 800, maxHeight = 800, quality = 0.7) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.src = base64;
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height *= maxWidth / width;
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxHeight) {
+                            width *= maxHeight / height;
+                            height = maxHeight;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', quality));
+                }
+            });
+        }
+
+        // Handle admin image files
+        async function handleAdminImageFiles(files) {
+            const imageFiles = files.filter(file => file.type.startsWith('image/'));
+            
+            if (adminSelectedImages.length + imageFiles.length > 5) {
+                adminImageLimitWarning.style.display = 'block';
+                setTimeout(() => {
+                    adminImageLimitWarning.style.display = 'none';
+                }, 3000);
+                return;
+            }
+
+            isUploading = true;
+            adminSubmitBtn.disabled = true;
+            adminProgressBar.style.display = 'block';
+
+            let processed = 0;
+            const total = imageFiles.length;
+
+            for (const file of imageFiles) {
+                if (file.size > 5 * 1024 * 1024) {
+                    alert(`File ${file.name} ni kubwa sana. Tafadhali chagua file ndogo (max 5MB)`);
+                    continue;
+                }
+
+                const reader = new FileReader();
+                
+                await new Promise((resolve) => {
+                    reader.onload = async function(e) {
+                        const compressedImage = await compressImage(e.target.result);
+                        adminSelectedImages.push(compressedImage);
+                        
+                        processed++;
+                        const progress = (processed / total) * 100;
+                        adminProgressFill.style.width = progress + '%';
+                        
+                        showAdminImagePreview(compressedImage, adminSelectedImages.length - 1);
+                        
+                        resolve();
+                    }
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            isUploading = false;
+            adminSubmitBtn.disabled = false;
+            
+            setTimeout(() => {
+                adminProgressBar.style.display = 'none';
+                adminProgressFill.style.width = '0%';
+            }, 500);
+        }
+
+        // Show admin image preview
+        function showAdminImagePreview(imageData, index) {
+            const previewItem = document.createElement('div');
+            previewItem.className = 'preview-item';
+            
+            const img = document.createElement('img');
+            img.src = imageData;
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'preview-remove';
+            removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+            removeBtn.onclick = function(e) {
+                e.preventDefault();
+                adminSelectedImages.splice(index, 1);
+                refreshAdminImagePreview();
+            };
+            
+            previewItem.appendChild(img);
+            previewItem.appendChild(removeBtn);
+            adminImagePreview.appendChild(previewItem);
+        }
+
+        // Refresh admin image preview
+        function refreshAdminImagePreview() {
+            adminImagePreview.innerHTML = '';
+            adminSelectedImages.forEach((image, index) => {
+                showAdminImagePreview(image, index);
+            });
+        }
+
+        function checkAuth() {
+            currentUser = JSON.parse(localStorage.getItem('currentUser')) || JSON.parse(sessionStorage.getItem('currentUser'));
+            if (!currentUser || currentUser.role !== 'admin') { 
+                window.location.href = 'signin.html'; 
+                return; 
+            }
+            document.getElementById('adminName').textContent = currentUser.fullName || 'Admin';
+            document.getElementById('welcomeName').textContent = (currentUser.fullName || 'Admin').split(' ')[0];
+            document.getElementById('adminAvatar').textContent = (currentUser.fullName || 'A').charAt(0).toUpperCase();
+            loadData();
+        }
+
+        function loadData() {
+            const allProducts = JSON.parse(localStorage.getItem('products')) || [];
+            myProducts = allProducts.filter(p => p.sellerId === currentUser.id);
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+
+            document.getElementById('myProductsCount').textContent = myProducts.length;
+            document.getElementById('totalProductsCount').textContent = allProducts.length;
+            document.getElementById('totalUsersCount').textContent = users.length;
+
+            renderMyProductsTable(myProducts);
+            renderManageTable(myProducts);
+            renderUsersTable(users);
+        }
+
+        function renderMyProductsTable(products) {
+            const tbody = document.getElementById('myProductsTableBody');
+            tbody.innerHTML = products.map(p => `<tr><td><div class="product-info"><img src="${p.images?.[0] || 'https://via.placeholder.com/60'}" class="product-thumb"><span>${p.name}</span></div></td><td class="price">TZS ${p.price?.toLocaleString()}</td><td><span style="padding:5px 12px; background:#4CAF50; color:white; border-radius:50px;">Active</span></td><td><div class="action-buttons"><button class="action-btn edit-btn" onclick="editProduct('${p.id}')"><i class="fas fa-edit"></i></button><button class="action-btn delete-btn" onclick="deleteProduct('${p.id}')"><i class="fas fa-trash"></i></button></div></td></tr>`).join('');
+        }
+
+        function renderManageTable(products) {
+            const tbody = document.getElementById('manageProductsTableBody');
+            tbody.innerHTML = products.map(p => `<tr><td><div class="product-info"><img src="${p.images?.[0] || 'https://via.placeholder.com/60'}" class="product-thumb"><span>${p.name}</span></div></td><td class="price">TZS ${p.price?.toLocaleString()}</td><td><div class="action-buttons"><button class="action-btn edit-btn" onclick="editProduct('${p.id}')"><i class="fas fa-edit"></i></button><button class="action-btn delete-btn" onclick="deleteProduct('${p.id}')"><i class="fas fa-trash"></i></button></div></td></tr>`).join('');
+        }
+
+        function renderUsersTable(users) {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = users.map(u => `<tr><td>${u.fullName || u.full_name}</td><td>${u.email}</td><td>${u.phoneNumber || u.phone_number}</td><td><span style="padding:5px 12px; background:${u.role==='admin'?'#ff6b6b':'#4CAF50'}; color:white; border-radius:50px;">${u.role || 'user'}</span></td></tr>`).join('');
+        }
+
+        function editProduct(id) {
+            const product = myProducts.find(p => p.id === id);
+            if (!product) return;
+            const newName = prompt('Edit product name:', product.name);
+            if (newName) product.name = newName;
+            const newPrice = prompt('Edit price (TZS):', product.price);
+            if (newPrice) product.price = Number(newPrice);
+            const newDesc = prompt('Edit description:', product.description);
+            if (newDesc) product.description = newDesc;
+            
+            const all = JSON.parse(localStorage.getItem('products')) || [];
+            const idx = all.findIndex(p => p.id === id);
+            if (idx !== -1) all[idx] = product;
+            localStorage.setItem('products', JSON.stringify(all));
+            loadData();
+            alert('Product updated!');
+        }
+
+        function deleteProduct(id) {
+            if (!confirm('Delete this product?')) return;
+            let all = JSON.parse(localStorage.getItem('products')) || [];
+            all = all.filter(p => p.id !== id);
+            localStorage.setItem('products', JSON.stringify(all));
+            loadData();
+            alert('Product deleted');
+        }
+
+        function searchMyProducts() {
+            const q = document.getElementById('searchMyProducts').value.toLowerCase();
+            const filtered = myProducts.filter(p => p.name.toLowerCase().includes(q));
+            renderMyProductsTable(filtered);
+        }
+
+        function searchManage() {
+            const q = document.getElementById('searchManage').value.toLowerCase();
+            const filtered = myProducts.filter(p => p.name.toLowerCase().includes(q));
+            renderManageTable(filtered);
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (isUploading) {
+                alert('Tafadhali subiri images zipakie kwanza');
+                return;
+            }
+            
+            const name = document.getElementById('prodName').value;
+            const category = document.getElementById('prodCategory').value;
+            const location = document.getElementById('prodLocation').value;
+            const price = Number(document.getElementById('prodPrice').value);
+            const description = document.getElementById('prodDescription').value;
+            const condition = document.getElementById('prodCondition').value;
+
+            const newProduct = {
+                id: Date.now().toString(),
+                name, category, location, price, description, condition,
+                images: adminSelectedImages.length ? adminSelectedImages : ['https://via.placeholder.com/400x300?text=No+Image'],
+                sellerId: currentUser.id,
+                sellerName: currentUser.fullName || currentUser.full_name,
+                sellerPhone: currentUser.phoneNumber || currentUser.phone_number,
+                createdAt: new Date().toISOString()
+            };
+
+            const all = JSON.parse(localStorage.getItem('products')) || [];
+            all.push(newProduct);
+            localStorage.setItem('products', JSON.stringify(all));
+            
+            alert('Product uploaded!');
+            adminSelectedImages = [];
+            adminImagePreview.innerHTML = '';
+            loadData();
+            showSection('dashboard');
+        });
+
+        function showSection(section) {
+            ['dashboardSection','uploadSection','myproductsSection','usersSection'].forEach(id => document.getElementById(id).style.display = 'none');
+            if (section === 'dashboard') document.getElementById('dashboardSection').style.display = 'block';
+            if (section === 'upload') document.getElementById('uploadSection').style.display = 'block';
+            if (section === 'myproducts') document.getElementById('myproductsSection').style.display = 'block';
+            if (section === 'users') { 
+                document.getElementById('usersSection').style.display = 'block'; 
+                loadData(); 
+            }
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            sessionStorage.removeItem('currentUser');
+            window.location.href = 'signin.html';
+        }
+
+        window.onload = checkAuth;
+    </script>
+</body>
+</html>

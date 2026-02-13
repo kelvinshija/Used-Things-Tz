@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Favorites - used things-Tz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Poppins',sans-serif; background:#f8fafc; }
+        .navbar { background:linear-gradient(145deg,#1a1a2e,#16213e); padding:15px 30px; color:white; }
+        .nav-container { max-width:1400px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; }
+        .logo { display:flex; align-items:center; gap:10px; text-decoration:none; color:white; }
+        .logo i { font-size:2rem; background:linear-gradient(45deg,#ff6b6b,#ff8e8e); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .nav-links a { color:white; text-decoration:none; margin-left:20px; padding:10px 20px; border-radius:50px; }
+        .nav-links a.active { background:rgba(255,107,107,0.2); color:#ff6b6b; }
+        .main { max-width:1400px; margin:40px auto; padding:0 30px; }
+        .header { margin-bottom:30px; }
+        .products-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(350px,1fr)); gap:30px; }
+        .product-card {
+            background:white; border-radius:20px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.05);
+            transition:0.3s; position:relative; cursor:pointer;
+        }
+        .product-card:hover { transform:translateY(-10px); border:2px solid #ff6b6b; }
+        .product-image { height:200px; width:100%; object-fit:cover; }
+        .product-info { padding:20px; }
+        .product-title { font-size:1.2rem; font-weight:700; color:#333; }
+        .product-price { color:#ff6b6b; font-weight:800; font-size:1.3rem; }
+        .btn-favorite {
+            position:absolute; top:15px; right:15px; width:40px; height:40px;
+            background:white; border-radius:50%; display:flex; align-items:center; justify-content:center;
+            color:#ff6b6b; cursor:pointer; border:none; box-shadow:0 5px 15px rgba(0,0,0,0.1);
+        }
+        .empty-state { text-align:center; padding:60px; background:white; border-radius:20px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="user-dashboard.html" class="logo"><i class="fas fa-store"></i><span>used things-Tz</span></a>
+            <div class="nav-links">
+                <a href="user-dashboard.html">Home</a>
+                <a href="favorites.html" class="active">Favorites</a>
+                <a href="my-products.html">My Products</a>
+                <a href="profile-settings.html">Settings</a>
+            </div>
+        </div>
+    </nav>
+    <div class="main">
+        <div class="header"><h1>My Favorites</h1></div>
+        <div id="favoritesGrid" class="products-grid"></div>
+    </div>
+    <script>
+        function loadFavorites() {
+            const user = JSON.parse(localStorage.getItem('currentUser')) || JSON.parse(sessionStorage.getItem('currentUser'));
+            if (!user) { window.location.href='signin.html'; return; }
+            const favs = JSON.parse(localStorage.getItem('favorites')) || [];
+            const all = JSON.parse(localStorage.getItem('products')) || [];
+            const myFavs = all.filter(p => favs.some(f => f.productId === p.id && f.userId === user.id));
+            const grid = document.getElementById('favoritesGrid');
+            if (!myFavs.length) {
+                grid.innerHTML = '<div class="empty-state"><i class="fas fa-heart" style="font-size:60px; color:#ccc;"></i><h3>No favorites yet</h3><p>Click the heart icon on products to save them here</p></div>';
+                return;
+            }
+            grid.innerHTML = myFavs.map(p => `
+                <div class="product-card" onclick="window.location.href='product-details.html?id=${p.id}'">
+                    <img src="${p.images?.[0] || 'https://via.placeholder.com/400x300'}" class="product-image">
+                    <button class="btn-favorite" onclick="event.stopPropagation(); removeFavorite('${p.id}')"><i class="fas fa-heart"></i></button>
+                    <div class="product-info">
+                        <div style="display:flex; justify-content:space-between;">
+                            <h3 class="product-title">${p.name}</h3>
+                            <span class="product-price">TZS ${p.price?.toLocaleString()}</span>
+                        </div>
+                        <p style="color:#666; margin:10px 0;">${p.location || 'Tanzania'}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function removeFavorite(pid) {
+            const user = JSON.parse(localStorage.getItem('currentUser')) || JSON.parse(sessionStorage.getItem('currentUser'));
+            let favs = JSON.parse(localStorage.getItem('favorites')) || [];
+            favs = favs.filter(f => !(f.productId === pid && f.userId === user.id));
+            localStorage.setItem('favorites', JSON.stringify(favs));
+            loadFavorites();
+        }
+
+        window.onload = loadFavorites;
+    </script>
+</body>
+</html>
